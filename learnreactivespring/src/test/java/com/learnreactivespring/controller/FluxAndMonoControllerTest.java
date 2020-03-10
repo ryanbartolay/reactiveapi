@@ -88,4 +88,38 @@ public class FluxAndMonoControllerTest {
                 });
     }
 
+    @Test
+    public void fluxstream() {
+        Flux<Long> returnFluxStream = m_webTestClient.get()
+                .uri("/fluxstream_infinite")
+                .accept(MediaType.APPLICATION_STREAM_JSON)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .returnResult(Long.class) // converts result to list of integers
+                .getResponseBody();
+
+        StepVerifier.create(returnFluxStream)
+                .expectNext(0l)
+                .expectNext(1l)
+                .expectNext(2l)
+                .expectNext(3l)
+                .thenCancel()
+                .verify();
+    }
+
+    @Test
+    public void mono() {
+        m_webTestClient.get()
+                .uri("/mono")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(Integer.class)
+                .consumeWith((response) -> {
+                    assertEquals(1, response.getResponseBody());
+                });
+    }
+
 }
